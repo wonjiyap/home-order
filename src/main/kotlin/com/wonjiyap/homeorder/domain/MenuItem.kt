@@ -13,7 +13,7 @@ class MenuItem(
         var name: String,
         @Lob
         var description: String,
-        @OneToMany(mappedBy = "menuItem")
+        @OneToMany(mappedBy = "menuItem", cascade = [CascadeType.ALL])
         var menuOptions: MutableList<MenuOption> = ArrayList(),
         @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
         var id: Long? = null

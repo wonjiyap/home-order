@@ -8,7 +8,7 @@ import lombok.ToString
 class Category(
         @Column(nullable = false)
         var name: String,
-        @OneToMany(mappedBy = "category")
+        @OneToMany(mappedBy = "category", cascade = [CascadeType.ALL])
         var menuItems: MutableList<MenuItem> = ArrayList(),
         @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
         var id: Long? = null,
