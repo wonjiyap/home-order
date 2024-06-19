@@ -1,6 +1,6 @@
 version: '3'
 services:
-  pantry-fairy-db:
+  home-order-db:
     image: mysql:8.0
     container_name: home-order-db
     ports:
