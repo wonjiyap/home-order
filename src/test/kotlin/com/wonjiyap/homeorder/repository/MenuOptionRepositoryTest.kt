@@ -3,6 +3,7 @@ package com.wonjiyap.homeorder.repository
 import com.wonjiyap.homeorder.domain.Category
 import com.wonjiyap.homeorder.domain.MenuItem
 import com.wonjiyap.homeorder.domain.MenuOption
+import com.wonjiyap.homeorder.repository.dto.menuOption.MenuOptionFetchParam
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,29 +20,37 @@ class MenuOptionRepositoryTest(
     @Autowired val menuOptionRepository: MenuOptionRepository,
 ) {
 
-    private val categoryA = Category("categoryA")
+    private lateinit var categoryA: Category
 
-    private val menuItem1 = MenuItem(categoryA, "menu item 1", "description")
-    private val menuItem2 = MenuItem(categoryA, "menu item 2", "description")
+    private lateinit var  menuItem1: MenuItem
+    private lateinit var  menuItem2: MenuItem
 
-    private val menuOption1 = MenuOption(menuItem1, "menu option 1")
-    private val menuOption2 = MenuOption(menuItem1, "menu option 2")
-    private val menuOption3 = MenuOption(menuItem2, "menu option 3")
-    private val menuOption4 = MenuOption(menuItem2, "menu option 4")
-    private val menuOption5 = MenuOption(menuItem2, "menu option 5")
+    private lateinit var  menuOption1: MenuOption
+    private lateinit var  menuOption2: MenuOption
+    private lateinit var  menuOption3: MenuOption
+    private lateinit var  menuOption4: MenuOption
+    private lateinit var  menuOption5: MenuOption
 
     @BeforeEach
     fun init() {
-        categoryRepository.save(categoryA)
+        categoryA = Category(1, "category 1")
+        categoryRepository.saveAndFlush(categoryA)
 
-        menuItemRepository.save(menuItem1)
-        menuItemRepository.save(menuItem2)
+        menuItem1 = MenuItem(1, categoryA.id, "menu item 1", "description")
+        menuItem2 = MenuItem(2, categoryA.id, "menu item 2", "description")
+        menuItemRepository.saveAndFlush(menuItem1)
+        menuItemRepository.saveAndFlush(menuItem2)
 
-        menuOptionRepository.save(menuOption1)
-        menuOptionRepository.save(menuOption2)
-        menuOptionRepository.save(menuOption3)
-        menuOptionRepository.save(menuOption4)
-        menuOptionRepository.save(menuOption5)
+        menuOption1 = MenuOption(1, menuItem1.id, "menu option 1")
+        menuOption2 = MenuOption(2, menuItem1.id, "menu option 2")
+        menuOption3 = MenuOption(3, menuItem2.id, "menu option 3")
+        menuOption4 = MenuOption(4, menuItem2.id, "menu option 4")
+        menuOption5 = MenuOption(5, menuItem2.id, "menu option 5")
+        menuOptionRepository.saveAndFlush(menuOption1)
+        menuOptionRepository.saveAndFlush(menuOption2)
+        menuOptionRepository.saveAndFlush(menuOption3)
+        menuOptionRepository.saveAndFlush(menuOption4)
+        menuOptionRepository.saveAndFlush(menuOption5)
     }
 
     @Test
@@ -53,8 +62,8 @@ class MenuOptionRepositoryTest(
 
     @Test
     fun canLookupMenuOptionListByMenuItem() {
-        val menuItem1Options = menuOptionRepository.findByMenuItem(menuItem1)
-        val menuItem2Options = menuOptionRepository.findByMenuItem(menuItem2)
+        val menuItem1Options = menuOptionRepository.fetch(MenuOptionFetchParam(menuItemId = menuItem1.id))
+        val menuItem2Options = menuOptionRepository.fetch(MenuOptionFetchParam(menuItemId = menuItem2.id))
 
         assertThat(menuItem1Options.size).isEqualTo(2)
         assertThat(menuItem2Options.size).isEqualTo(3)
@@ -62,10 +71,10 @@ class MenuOptionRepositoryTest(
 
     @Test
     fun canCreateMenuOption() {
-        val newMenuOption = MenuOption(menuItem1, "new menu option")
+        val newMenuOption = MenuOption(6, menuItem1.id, "new menu option")
         val savedMenuOption = menuOptionRepository.save(newMenuOption)
 
-        val findMenuOption = menuOptionRepository.findById(savedMenuOption.id!!).orElseThrow()
+        val findMenuOption = menuOptionRepository.findById(savedMenuOption.id).orElseThrow()
 
         assertThat(findMenuOption.id).isEqualTo(savedMenuOption.id)
         assertThat(findMenuOption.description).isEqualTo(savedMenuOption.description)
@@ -74,7 +83,7 @@ class MenuOptionRepositoryTest(
 
     @Test
     fun canUpdateMenuOption() {
-        val findMenuOption = menuOptionRepository.findById(menuOption1.id!!).orElseThrow()
+        val findMenuOption = menuOptionRepository.findById(menuOption1.id).orElseThrow()
 
         assertThat(findMenuOption.description).isEqualTo("menu option 1")
 

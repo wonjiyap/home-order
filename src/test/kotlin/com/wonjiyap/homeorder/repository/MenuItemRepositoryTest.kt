@@ -2,6 +2,7 @@ package com.wonjiyap.homeorder.repository
 
 import com.wonjiyap.homeorder.domain.Category
 import com.wonjiyap.homeorder.domain.MenuItem
+import com.wonjiyap.homeorder.repository.dto.menuItem.MenuItemFetchParam
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -17,25 +18,32 @@ class MenuItemRepositoryTest(
     @Autowired val menuItemRepository: MenuItemRepository,
 ) {
 
-    private val categoryA = Category("categoryA")
-    private val categoryB = Category("categoryB")
+    private lateinit var categoryA: Category
+    private lateinit var categoryB: Category
 
-    private val menuItem1 = MenuItem(categoryA, "menu item 1", "description")
-    private val menuItem2 = MenuItem(categoryA, "menu item 2", "description")
-    private val menuItem3 = MenuItem(categoryB, "menu item 3", "description")
-    private val menuItem4 = MenuItem(categoryB, "menu item 4", "description")
-    private val menuItem5 = MenuItem(categoryB, "menu item 5", "description")
+    private lateinit var menuItem1: MenuItem
+    private lateinit var menuItem2: MenuItem
+    private lateinit var menuItem3: MenuItem
+    private lateinit var menuItem4: MenuItem
+    private lateinit var menuItem5: MenuItem
 
     @BeforeEach
     fun init() {
-        categoryRepository.save(categoryA)
-        categoryRepository.save(categoryB)
+        categoryA = Category(1, "categoryA")
+        categoryB = Category(2, "categoryB")
+        categoryRepository.saveAndFlush(categoryA)
+        categoryRepository.saveAndFlush(categoryB)
 
-        menuItemRepository.save(menuItem1)
-        menuItemRepository.save(menuItem2)
-        menuItemRepository.save(menuItem3)
-        menuItemRepository.save(menuItem4)
-        menuItemRepository.save(menuItem5)
+        menuItem1 = MenuItem(1, categoryA.id, "menu item 1", "description")
+        menuItem2 = MenuItem(2, categoryA.id, "menu item 2", "description")
+        menuItem3 = MenuItem(3, categoryB.id, "menu item 3", "description")
+        menuItem4 = MenuItem(4, categoryB.id, "menu item 4", "description")
+        menuItem5 = MenuItem(5, categoryB.id, "menu item 5", "description")
+        menuItemRepository.saveAndFlush(menuItem1)
+        menuItemRepository.saveAndFlush(menuItem2)
+        menuItemRepository.saveAndFlush(menuItem3)
+        menuItemRepository.saveAndFlush(menuItem4)
+        menuItemRepository.saveAndFlush(menuItem5)
     }
 
     @Test
@@ -47,8 +55,8 @@ class MenuItemRepositoryTest(
 
     @Test
     fun canLookupMenuItemListByCategory() {
-        val categoryAMenuItems = menuItemRepository.findByCategory(categoryA)
-        val categoryBMenuItems = menuItemRepository.findByCategory(categoryB)
+        val categoryAMenuItems = menuItemRepository.fetch(MenuItemFetchParam(categoryId = categoryA.id))
+        val categoryBMenuItems = menuItemRepository.fetch(MenuItemFetchParam(categoryId = categoryB.id))
 
         assertThat(categoryAMenuItems.size).isEqualTo(2)
         assertThat(categoryBMenuItems.size).isEqualTo(3)
@@ -56,10 +64,10 @@ class MenuItemRepositoryTest(
 
     @Test
     fun canCreateMenuItem() {
-        val newMenuItem = MenuItem(categoryA, "new menu item", "description")
+        val newMenuItem = MenuItem(6, categoryA.id, "new menu item", "description")
         val savedMenuItem = menuItemRepository.save(newMenuItem)
 
-        val findMenuItem = menuItemRepository.findById(savedMenuItem.id!!).orElseThrow()
+        val findMenuItem = menuItemRepository.findById(savedMenuItem.id).orElseThrow()
 
         assertThat(findMenuItem.id).isEqualTo(savedMenuItem.id)
         assertThat(findMenuItem.name).isEqualTo(savedMenuItem.name)
@@ -68,7 +76,7 @@ class MenuItemRepositoryTest(
 
     @Test
     fun canUpdateMenuItem() {
-        val findMenuItem = menuItemRepository.findById(menuItem1.id!!).orElseThrow()
+        val findMenuItem = menuItemRepository.findById(menuItem1.id).orElseThrow()
 
         assertThat(findMenuItem.name).isEqualTo("menu item 1")
 

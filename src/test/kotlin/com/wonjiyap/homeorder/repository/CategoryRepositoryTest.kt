@@ -11,13 +11,13 @@ import org.assertj.core.api.Assertions.*
 @SpringBootTest
 @Transactional
 class CategoryRepositoryTest(
-    @Autowired val categoryRepository: CategoryRepository
+    @Autowired private val categoryRepository: CategoryRepository
 ) {
 
     @Test
     fun canLookUpCategoryList() {
-        val category1 = Category("category 1")
-        val category2 = Category("category 2")
+        val category1 = Category(1, "category 1")
+        val category2 = Category(2, "category 2")
         categoryRepository.save(category1)
         categoryRepository.save(category2)
 
@@ -27,10 +27,10 @@ class CategoryRepositoryTest(
 
     @Test
     fun canCreateCategory() {
-        val category = Category("category")
+        val category = Category(1, "category")
         val savedCategory = categoryRepository.save(category)
 
-        val findCategory = categoryRepository.findById(savedCategory.id!!).orElseThrow()
+        val findCategory = categoryRepository.findById(savedCategory.id).orElseThrow()
 
         assertThat(findCategory.id).isEqualTo(savedCategory.id)
         assertThat(findCategory.name).isEqualTo(savedCategory.name)
@@ -39,9 +39,9 @@ class CategoryRepositoryTest(
 
     @Test
     fun canUpdateCategory() {
-        val category = Category("category")
+        val category = Category(1, "category")
         val savedCategory = categoryRepository.save(category)
-        val findCategory = categoryRepository.findById(savedCategory.id!!).orElseThrow()
+        val findCategory = categoryRepository.findById(savedCategory.id).orElseThrow()
 
         findCategory.name = "new name"
 
@@ -50,8 +50,8 @@ class CategoryRepositoryTest(
 
     @Test
     fun canDeleteCategory() {
-        val category1 = Category("category 1")
-        val category2 = Category("category 2")
+        val category1 = Category(1, "category 1")
+        val category2 = Category(2, "category 2")
         categoryRepository.save(category1)
         categoryRepository.save(category2)
         val allCategories = categoryRepository.findAll()
