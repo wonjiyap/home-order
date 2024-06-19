@@ -1,21 +1,27 @@
 package com.wonjiyap.homeorder.domain
 
-import jakarta.persistence.*
-import lombok.ToString
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Lob
+import jakarta.persistence.Table
 
 @Entity
-@ToString(of = ["id", "name", "description"])
+@Table(name = "menu_item")
 class MenuItem(
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "category_id")
-        var category: Category,
-        @Column(nullable = false)
-        var name: String,
-        @Lob
-        var description: String,
-        @OneToMany(mappedBy = "menuItem", cascade = [CascadeType.ALL])
-        var menuOptions: MutableList<MenuOption> = ArrayList(),
-        @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-        var id: Long? = null
-) {
-}
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    var id: Long = 0,
+
+    @Column(name = "category_id", nullable = false)
+    var categoryId: Long = 0,
+
+    @Column(name = "name", nullable = false)
+    var name: String,
+
+    @Lob
+    @Column(name = "description")
+    var description: String,
+)

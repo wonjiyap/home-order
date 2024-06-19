@@ -1,17 +1,19 @@
 package com.wonjiyap.homeorder.domain
 
-import jakarta.persistence.*
-import lombok.ToString
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 
 @Entity
-@ToString(of = ["id", "name"])
+@Table(name = "category")
 class Category(
-        @Column(nullable = false)
-        var name: String,
-        @OneToMany(mappedBy = "category", cascade = [CascadeType.ALL])
-        var menuItems: MutableList<MenuItem> = ArrayList(),
-        @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-        var id: Long? = null,
-) {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    var id: Long = 0,
 
-}
+    @Column(name = "name", nullable = false)
+    var name: String,
+)
