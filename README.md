@@ -37,7 +37,7 @@
 
 ---
 
-## ERD (Entity Relationship Diagram)
+## ERD
 
 ```mermaid
 erDiagram
