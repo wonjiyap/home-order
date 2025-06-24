@@ -4,6 +4,9 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/home-order
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
 
 logging:
   level:
