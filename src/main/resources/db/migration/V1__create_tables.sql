@@ -56,6 +56,7 @@ CREATE TABLE categories
     display_order INTEGER      NOT NULL DEFAULT 0,
     created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at    TIMESTAMP,
     UNIQUE (party_id, name)
 );
 
@@ -70,6 +71,7 @@ CREATE TABLE menus
     display_order  INTEGER      NOT NULL DEFAULT 0,
     created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at     TIMESTAMP,
     UNIQUE (category_id, name)
 );
 
@@ -81,6 +83,7 @@ CREATE TABLE option_groups
     is_required BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP,
     UNIQUE (menu_id, name)
 );
 
@@ -92,6 +95,7 @@ CREATE TABLE options
     display_order   INTEGER      NOT NULL DEFAULT 0,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at      TIMESTAMP,
     UNIQUE (option_group_id, name)
 );
 

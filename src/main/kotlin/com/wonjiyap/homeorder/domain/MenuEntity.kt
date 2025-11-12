@@ -16,4 +16,5 @@ class MenuEntity(id: EntityID<Long>) : LongEntity(id) {
     var displayOrder by Menus.displayOrder
     var createdAt by Menus.createdAt
     var updatedAt by Menus.updatedAt
+    var deletedAt by Menus.deletedAt
 }

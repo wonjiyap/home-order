@@ -11,7 +11,7 @@ object Parties : LongIdTable("parties") {
     val description = varchar("description", 1000).nullable()
     val date = timestamp("date").nullable()
     val location = varchar("location", 255).nullable()
-    val status = enumeration<PartyStatus>("status")
+    val status = enumerationByName("status", 20, PartyStatus::class)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
     val deletedAt = timestamp("deleted_at").nullable()

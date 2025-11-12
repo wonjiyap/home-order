@@ -10,6 +10,7 @@ object OptionGroups : LongIdTable("option_groups") {
     val isRequired = bool("is_required").default(false)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
+    val deletedAt = timestamp("deleted_at").nullable()
 
     init {
         uniqueIndex("unique_menu_option_group", menuId, name)
