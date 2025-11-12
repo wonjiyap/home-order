@@ -10,6 +10,7 @@ object Options : LongIdTable("options") {
     val displayOrder = integer("display_order").default(0)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
+    val deletedAt = timestamp("deleted_at").nullable()
 
     init {
         uniqueIndex("unique_option_group_option", optionGroupId, name)

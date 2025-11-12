@@ -13,4 +13,5 @@ class OptionGroupEntity(id: EntityID<Long>) : LongEntity(id) {
     var isRequired by OptionGroups.isRequired
     var createdAt by OptionGroups.createdAt
     var updatedAt by OptionGroups.updatedAt
+    val deletedAt by OptionGroups.deletedAt
 }

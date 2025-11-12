@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 object Orders : LongIdTable("orders") {
     val partyId = long("party_id")
     val guestId = long("guest_id")
-    val status = enumeration<OrderStatus>("status")
+    val status = enumerationByName("status", 20, OrderStatus::class)
     val orderedAt = timestamp("ordered_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
 

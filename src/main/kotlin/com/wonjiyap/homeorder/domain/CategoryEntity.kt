@@ -13,4 +13,5 @@ class CategoryEntity(id: EntityID<Long>) : LongEntity(id) {
     var displayOrder by Categories.displayOrder
     var createdAt by Categories.createdAt
     var updatedAt by Categories.updatedAt
+    var deletedAt by Categories.deletedAt
 }
