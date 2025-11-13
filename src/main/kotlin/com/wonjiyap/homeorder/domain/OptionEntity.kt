@@ -13,5 +13,5 @@ class OptionEntity(id: EntityID<Long>) : LongEntity(id) {
     var displayOrder by Options.displayOrder
     var createdAt by Options.createdAt
     var updatedAt by Options.updatedAt
-    val deletedAt by Options.deletedAt
+    var deletedAt by Options.deletedAt
 }
