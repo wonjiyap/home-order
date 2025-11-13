@@ -90,6 +90,7 @@ erDiagram
         INTEGER display_order
         TIMESTAMP created_at
         TIMESTAMP updated_at
+        TIMESTAMP deleted_at
     }
 
     menus {
@@ -102,6 +103,7 @@ erDiagram
         INTEGER display_order
         TIMESTAMP created_at
         TIMESTAMP updated_at
+        TIMESTAMP deleted_at
     }
 
     option_groups {
@@ -111,6 +113,7 @@ erDiagram
         BOOLEAN is_required
         TIMESTAMP created_at
         TIMESTAMP updated_at
+        TIMESTAMP deleted_at
     }
 
     options {
@@ -120,6 +123,7 @@ erDiagram
         INTEGER display_order
         TIMESTAMP created_at
         TIMESTAMP updated_at
+        TIMESTAMP deleted_at
     }
 
     orders {
