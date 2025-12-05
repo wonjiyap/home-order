@@ -11,3 +11,9 @@ spring:
 logging:
   level:
     org.jetbrains.exposed.sql: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /api/docs
+    tags-sorter: alpha
+    operations-sorter: alpha
