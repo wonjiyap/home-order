@@ -3,6 +3,8 @@
 ## 목차
 - [개요](#개요)
 - [기술스택](#기술스택)
+- [프로젝트 구조](#프로젝트-구조)
+- [상태 Enum](#상태-enum)
 - [ERD](#ERD)
 
 ---
@@ -27,13 +29,53 @@
 ## 기술스택
 
 ### 백엔드
-- **언어**: Kotlin
-- **프레임워크**: Spring Boot
+- **언어**: Kotlin 1.9.25
+- **프레임워크**: Spring Boot 3.4.5
+- **빌드 도구**: Gradle (Kotlin DSL)
+- **Java**: 17
 
 ### 데이터베이스
 - **RDBMS**: PostgreSQL
-- **ORM**: Exposed ORM
+- **ORM**: Exposed ORM 0.61.0
 - **마이그레이션**: Flyway
+
+---
+
+## 프로젝트 구조
+
+```
+src/main/kotlin/com/wonjiyap/homeorder/
+├── domain/          # Entity (Exposed DAO)
+├── tables/          # Exposed Table 정의
+├── repository/      # Repository 클래스
+│   └── dto/         # 조회 파라미터 DTO
+├── service/         # 서비스 레이어
+├── controller/      # 컨트롤러
+└── enums/           # Enum (PartyStatus, OrderStatus)
+
+src/main/resources/
+├── db/migration/    # Flyway 마이그레이션
+└── application.yml  # 설정
+```
+
+---
+
+## 상태 Enum
+
+### PartyStatus (파티 상태)
+| 값 | 설명 |
+|----|------|
+| PLANNING | 계획 중 |
+| OPEN | 주문 가능 |
+| CLOSED | 주문 마감 |
+| CANCELLED | 취소됨 |
+
+### OrderStatus (주문 상태)
+| 값 | 설명 |
+|----|------|
+| READY | 대기 중 |
+| COMPLETED | 완료 |
+| CANCELLED | 취소됨 |
 
 ---
 
