@@ -38,6 +38,9 @@ dependencies {
     // flyway
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
+
+    // swagger (springdoc-openapi)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4")
 }
 
 kotlin {
