@@ -12,6 +12,7 @@ data class PartyFetchParam(
     val dateFrom: Instant? = null,
     val dateTo: Instant? = null,
     val status: PartyStatus? = null,
+    val deleted: Boolean? = null,
 )
 
 /**
@@ -19,4 +20,6 @@ data class PartyFetchParam(
  */
 data class PartyFetchOneParam(
     val id: Long? = null,
+    val hostId: Long? = null,
+    val deleted: Boolean? = null,
 )

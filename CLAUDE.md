@@ -213,6 +213,28 @@ throw HomeOrderException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니
 - `/api/auth/**` 경로는 인증 제외
 - 현재 사용자 ID 조회: `AuthContext.getCurrentUserId()`
 
+### REST API 규칙
+
+- **수정(Update)은 항상 PATCH 사용** (PUT 사용하지 않음)
+- 상태 변경도 별도 API 없이 PATCH로 처리
+- PatchRequest의 필드는 nullable로 선언하여 값이 있을 때만 업데이트
+
+```kotlin
+// PatchRequest 예시
+data class UpdatePartyRequest(
+    val name: String? = null,        // optional
+    val status: PartyStatus? = null, // optional (상태 변경도 여기서)
+)
+
+// Service에서 null 체크 후 업데이트
+fun update(param: UpdatePartyParam): PartyEntity = transaction {
+    val party = findById(param.id)
+    param.name?.let { party.name = it }
+    param.status?.let { party.status = it }
+    party
+}
+```
+
 ### Controller 작성 패턴
 
 ```kotlin
@@ -241,32 +263,38 @@ class AuthController(
 
 ### Service 작성 패턴
 
+**메서드 네이밍**
+- 목록 조회: `list(param)`
+- 단건 조회: `get(param)`
+- 생성: `create(param)`
+- 수정: `update(param)`
+- 삭제: `delete(param)`
+
+**파라미터 규칙: 파라미터가 2개 이상이면 반드시 xxxParam DTO 생성**
+```kotlin
+// Bad - 파라미터 2개 이상을 직접 받음
+fun get(id: Long, hostId: Long): PartyEntity
+
+// Good - Param DTO로 감싸기
+fun get(param: GetPartyParam): PartyEntity
+
+data class GetPartyParam(
+    val id: Long,
+    val hostId: Long,
+)
+```
+
 ```kotlin
 @Service
-class AuthService(
-    private val userRepository: UserRepository,
-    private val passwordEncoder: PasswordEncoder,
+class PartyService(
+    private val partyRepository: PartyRepository,
 ) {
 
-    fun signup(param: SignupParam): UserEntity {
-        val existingUser = userRepository.fetchOne(
-            UserFetchOneParam(
-                loginId = param.loginId,
-                deleted = false,
-            )
-        )
-        if (existingUser != null) {
-            throw HomeOrderException(ErrorCode.CONFLICT, "이미 사용중인 아이디입니다")
-        }
-
-        return transaction {
-            UserEntity.new {
-                loginId = param.loginId
-                password = passwordEncoder.encode(param.password)
-                nickname = param.nickname
-            }
-        }
-    }
+    fun list(param: ListPartyParam): List<PartyEntity> { ... }
+    fun get(param: GetPartyParam): PartyEntity { ... }
+    fun create(param: CreatePartyParam): PartyEntity { ... }
+    fun update(param: UpdatePartyParam): PartyEntity { ... }
+    fun delete(param: DeletePartyParam) { ... }
 }
 ```
 
