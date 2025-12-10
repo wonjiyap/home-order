@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/home-order
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+
+logging:
+  level:
+    org.jetbrains.exposed.sql: DEBUG
+
+jwt:
+  secret: test-secret-key-for-jwt-256-bits-minimum-length-required-here
+  expiration: 86400000
