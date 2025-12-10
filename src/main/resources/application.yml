@@ -12,6 +12,10 @@ logging:
   level:
     org.jetbrains.exposed.sql: DEBUG
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
 springdoc:
   swagger-ui:
     path: /api/docs
