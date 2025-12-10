@@ -45,17 +45,36 @@
 
 ```
 src/main/kotlin/com/wonjiyap/homeorder/
+├── config/          # 설정 (Swagger, WebMvc, PasswordEncoder 등)
+├── controller/      # 컨트롤러
+│   └── dto/         # Request/Response DTO
 ├── domain/          # Entity (Exposed DAO)
-├── tables/          # Exposed Table 정의
+├── enums/           # Enum (PartyStatus, OrderStatus, ErrorCode)
+├── exception/       # 예외 처리 (HomeOrderException, GlobalExceptionHandler)
+├── interceptor/     # 인터셉터 (AuthInterceptor)
 ├── repository/      # Repository 클래스
 │   └── dto/         # 조회 파라미터 DTO
 ├── service/         # 서비스 레이어
-├── controller/      # 컨트롤러
-└── enums/           # Enum (PartyStatus, OrderStatus)
+│   └── dto/         # Param/Result DTO
+├── tables/          # Exposed Table 정의
+└── util/            # 유틸리티 (JwtUtil, AuthContext)
 
 src/main/resources/
 ├── db/migration/    # Flyway 마이그레이션
 └── application.yml  # 설정
+```
+
+## 환경 변수
+
+| 변수명 | 필수 | 기본값 | 설명 |
+|--------|------|--------|------|
+| `JWT_SECRET` | O | - | JWT 서명용 비밀키 (최소 256bits) |
+| `JWT_EXPIRATION` | X | 86400000 | JWT 만료시간 (ms, 기본 24시간) |
+
+### IntelliJ 설정
+Run Configuration > Environment variables에 추가:
+```
+JWT_SECRET=your-secret-key-at-least-256-bits-long
 ```
 
 ---
