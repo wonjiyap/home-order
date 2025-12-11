@@ -1,5 +1,6 @@
 package com.wonjiyap.homeorder.service
 
+import com.wonjiyap.homeorder.domain.PartyGuestEntity
 import com.wonjiyap.homeorder.domain.UserEntity
 import com.wonjiyap.homeorder.enums.PartyStatus
 import com.wonjiyap.homeorder.exception.ErrorCode
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @SpringBootTest
 @Transactional
@@ -392,5 +395,489 @@ class PartyServiceTest {
         // Then
         assertThat(parties).hasSize(1)
         assertThat(parties[0].name).isEqualTo("남아있는 파티")
+    }
+
+    // ========== 검증 테스트 ==========
+
+    @Test
+    fun `생성시 과거 날짜면 예외 발생 테스트`() {
+        // Given
+        val pastDate = Instant.now().minus(1, ChronoUnit.DAYS)
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.create(
+                CreatePartyParam(
+                    hostId = testUserId,
+                    name = "과거 날짜 파티",
+                    date = pastDate,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+    }
+
+    @Test
+    fun `생성시 날짜가 null이면 날짜 검증 스킵 테스트`() {
+        // Given & When
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "날짜 없는 파티",
+                date = null,
+            )
+        )
+
+        // Then
+        assertThat(party.date).isNull()
+    }
+
+    @Test
+    fun `생성시 같은 날짜와 이름 중복이면 예외 발생 테스트`() {
+        // Given
+        val futureDate = Instant.now().plus(7, ChronoUnit.DAYS)
+        partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "중복 파티",
+                date = futureDate,
+            )
+        )
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.create(
+                CreatePartyParam(
+                    hostId = testUserId,
+                    name = "중복 파티",
+                    date = futureDate,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CONFLICT)
+    }
+
+    @Test
+    fun `생성시 같은 이름이지만 다른 날짜면 중복 아님 테스트`() {
+        // Given
+        val date1 = Instant.now().plus(7, ChronoUnit.DAYS)
+        val date2 = Instant.now().plus(14, ChronoUnit.DAYS)
+        partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "같은 이름 파티",
+                date = date1,
+            )
+        )
+
+        // When
+        val party2 = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "같은 이름 파티",
+                date = date2,
+            )
+        )
+
+        // Then
+        assertThat(party2.name).isEqualTo("같은 이름 파티")
+    }
+
+    @Test
+    fun `생성시 날짜가 null이면 중복 검증 스킵 테스트`() {
+        // Given
+        partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "날짜 없는 파티",
+                date = null,
+            )
+        )
+
+        // When - 같은 이름이지만 날짜가 null이면 중복 검증 안 함
+        val party2 = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "날짜 없는 파티",
+                date = null,
+            )
+        )
+
+        // Then
+        assertThat(party2.name).isEqualTo("날짜 없는 파티")
+    }
+
+    @Test
+    fun `생성시 취소된 파티와 같은 이름과 날짜면 중복 아님 테스트`() {
+        // Given
+        val futureDate = Instant.now().plus(7, ChronoUnit.DAYS)
+        val party1 = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "취소될 파티",
+                date = futureDate,
+            )
+        )
+        partyService.update(
+            UpdatePartyParam(
+                id = party1.id.value,
+                hostId = testUserId,
+                status = PartyStatus.CANCELLED,
+            )
+        )
+
+        // When - 취소된 파티는 중복 대상에서 제외
+        val party2 = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "취소될 파티",
+                date = futureDate,
+            )
+        )
+
+        // Then
+        assertThat(party2.name).isEqualTo("취소될 파티")
+    }
+
+    @Test
+    fun `수정시 날짜 변경될 때만 날짜 검증 테스트`() {
+        // Given
+        val futureDate = Instant.now().plus(7, ChronoUnit.DAYS)
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "수정 테스트 파티",
+                date = futureDate,
+            )
+        )
+
+        // When - 이름만 수정 (날짜 변경 안 함)
+        val updated = partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                name = "이름만 변경",
+            )
+        )
+
+        // Then
+        assertThat(updated.name).isEqualTo("이름만 변경")
+    }
+
+    @Test
+    fun `수정시 과거 날짜로 변경하면 예외 발생 테스트`() {
+        // Given
+        val futureDate = Instant.now().plus(7, ChronoUnit.DAYS)
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "날짜 변경 파티",
+                date = futureDate,
+            )
+        )
+        val pastDate = Instant.now().minus(1, ChronoUnit.DAYS)
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.update(
+                UpdatePartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                    date = pastDate,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+    }
+
+    @Test
+    fun `수정시 중복 검증 자기 자신 제외 테스트`() {
+        // Given
+        val futureDate = Instant.now().plus(7, ChronoUnit.DAYS)
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "자기 자신 파티",
+                date = futureDate,
+            )
+        )
+
+        // When - 같은 이름과 날짜로 수정 (자기 자신)
+        val updated = partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                name = "자기 자신 파티",
+                date = futureDate,
+            )
+        )
+
+        // Then
+        assertThat(updated.name).isEqualTo("자기 자신 파티")
+    }
+
+    @Test
+    fun `CANCELLED 상태에서 다른 상태로 변경시 예외 발생 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "취소 상태 파티",
+            )
+        )
+        partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.CANCELLED,
+            )
+        )
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.update(
+                UpdatePartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                    status = PartyStatus.OPEN,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+    }
+
+    @Test
+    fun `PLANNING에서 CLOSED로 직접 변경시 예외 발생 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "상태 전이 파티",
+            )
+        )
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.update(
+                UpdatePartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                    status = PartyStatus.CLOSED,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+    }
+
+    @Test
+    fun `CLOSED에서 OPEN으로 재오픈 가능 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "재오픈 파티",
+            )
+        )
+        partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.OPEN,
+            )
+        )
+        partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.CLOSED,
+            )
+        )
+
+        // When
+        val reopened = partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.OPEN,
+            )
+        )
+
+        // Then
+        assertThat(reopened.status).isEqualTo(PartyStatus.OPEN)
+    }
+
+    @Test
+    fun `OPEN 상태에서 삭제시 예외 발생 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "오픈 상태 파티",
+            )
+        )
+        partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.OPEN,
+            )
+        )
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.delete(
+                DeletePartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+    }
+
+    @Test
+    fun `CANCELLED 상태면 삭제 가능 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "취소 후 삭제 파티",
+            )
+        )
+        partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.CANCELLED,
+            )
+        )
+
+        // When
+        partyService.delete(
+            DeletePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+            )
+        )
+
+        // Then - 삭제 후 조회 안 됨
+        assertThatThrownBy {
+            partyService.get(
+                GetPartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND)
+    }
+
+    @Test
+    fun `PLANNING 상태 + 게스트 없으면 삭제 가능 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "게스트 없는 파티",
+            )
+        )
+
+        // When
+        partyService.delete(
+            DeletePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+            )
+        )
+
+        // Then
+        assertThatThrownBy {
+            partyService.get(
+                GetPartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND)
+    }
+
+    @Test
+    fun `PLANNING 상태 + 게스트 있으면 삭제 불가 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "게스트 있는 파티",
+            )
+        )
+
+        // 게스트 추가
+        transaction {
+            PartyGuestEntity.new {
+                partyId = party.id.value
+                nickname = "테스트게스트"
+                isBlocked = false
+            }
+        }
+
+        // When & Then
+        assertThatThrownBy {
+            partyService.delete(
+                DeletePartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+    }
+
+    @Test
+    fun `게스트가 있어도 CANCELLED 상태면 삭제 가능 테스트`() {
+        // Given
+        val party = partyService.create(
+            CreatePartyParam(
+                hostId = testUserId,
+                name = "취소된 게스트 있는 파티",
+            )
+        )
+
+        // 게스트 추가
+        transaction {
+            PartyGuestEntity.new {
+                partyId = party.id.value
+                nickname = "테스트게스트"
+                isBlocked = false
+            }
+        }
+
+        // 취소
+        partyService.update(
+            UpdatePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+                status = PartyStatus.CANCELLED,
+            )
+        )
+
+        // When
+        partyService.delete(
+            DeletePartyParam(
+                id = party.id.value,
+                hostId = testUserId,
+            )
+        )
+
+        // Then
+        assertThatThrownBy {
+            partyService.get(
+                GetPartyParam(
+                    id = party.id.value,
+                    hostId = testUserId,
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND)
     }
 }
