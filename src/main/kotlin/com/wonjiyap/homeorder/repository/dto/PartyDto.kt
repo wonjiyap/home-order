@@ -21,5 +21,10 @@ data class PartyFetchParam(
 data class PartyFetchOneParam(
     val id: Long? = null,
     val hostId: Long? = null,
+    val name: String? = null,
+    val date: Instant? = null,
+    val status: PartyStatus? = null,
+    val statusNot: PartyStatus? = null,
+    val excludeId: Long? = null,
     val deleted: Boolean? = null,
 )
