@@ -15,6 +15,7 @@ class WebMvcConfig(
             .addPathPatterns("/api/**")
             .excludePathPatterns(
                 "/api/auth/**",        // 로그인, 회원가입
+                "/api/parties/join",   // 게스트 파티 참여
                 "/api/docs/**",        // Swagger UI
                 "/api-docs/**",        // OpenAPI JSON
                 "/swagger-ui/**",      // Swagger 리소스
