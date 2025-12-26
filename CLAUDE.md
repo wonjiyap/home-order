@@ -152,9 +152,28 @@ psql -h localhost -p 5432 -d home-order
 
 | 레이어 | 요청 DTO | 응답 DTO | 위치 |
 |--------|----------|----------|------|
-| Controller | `xxxRequest` | `xxxResponse` | `controller/dto/` |
-| Service | `xxxParam` | `xxxResult` | `service/dto/` |
-| Repository | `xxxFetchOneParam`, `xxxFetchManyParam` | Entity | `repository/dto/` |
+| Controller | `엔티티명 + 목적 + Request` | `엔티티명 + Response` | `controller/dto/` |
+| Service | `엔티티명 + 목적 + Param` | `엔티티명 + 목적 + Result` | `service/dto/` |
+| Repository | `엔티티명 + FetchOneParam`, `엔티티명 + FetchManyParam` | Entity | `repository/dto/` |
+
+**DTO 네이밍 예시**
+```kotlin
+// Controller DTO
+PartyCreateRequest    // 파티 생성 요청
+PartyUpdateRequest    // 파티 수정 요청
+PartyResponse         // 파티 응답
+
+// Service DTO
+PartyCreateParam      // 파티 생성 파라미터
+PartyUpdateParam      // 파티 수정 파라미터
+PartyListParam        // 파티 목록 조회 파라미터
+PartyGetParam         // 파티 상세 조회 파라미터
+PartyDeleteParam      // 파티 삭제 파라미터
+
+// Repository DTO
+PartyFetchOneParam    // 파티 단건 조회 파라미터
+PartyFetchParam       // 파티 목록 조회 파라미터
+```
 
 - 별도의 DTO가 필요하지 않은 경우 Service에서 Entity 또는 Entity List를 반환한다.
 - 반환값이 필요 없는 경우:
