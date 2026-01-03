@@ -42,5 +42,5 @@ target/
 *.tar.gz
 *.rar
 
-.claude/
+ .claude/settings.local.json
 .serena/
