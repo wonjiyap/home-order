@@ -15,7 +15,5 @@ object Menus : LongIdTable("menus") {
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
     val deletedAt = timestamp("deleted_at").nullable()
 
-    init {
-        uniqueIndex("unique_category_menu", categoryId, name)
-    }
+    // Partial unique index is defined in migration V3 (WHERE deleted_at IS NULL)
 }
