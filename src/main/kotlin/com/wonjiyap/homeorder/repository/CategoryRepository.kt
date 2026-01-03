@@ -37,7 +37,13 @@ class CategoryRepository {
 
         param.id?.let { conditions.add(Categories.id eq it) }
         param.partyId?.let { conditions.add(Categories.partyId eq it) }
-        param.name?.let { conditions.add(Categories.name.lowerCase() like "%${it.lowercase()}%") }
+        param.name?.let { name ->
+            if (param.exactName) {
+                conditions.add(Categories.name.lowerCase() eq name.lowercase())
+            } else {
+                conditions.add(Categories.name.lowerCase() like "%${name.lowercase()}%")
+            }
+        }
         if (!param.withDeleted) conditions.add(Categories.deletedAt.isNull())
 
         if (conditions.isEmpty()) {

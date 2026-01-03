@@ -16,5 +16,6 @@ data class CategoryFetchOneParam(
     val id: Long? = null,
     val partyId: Long? = null,
     val name: String? = null,
+    val exactName: Boolean = false,
     val withDeleted: Boolean = false,
 )
