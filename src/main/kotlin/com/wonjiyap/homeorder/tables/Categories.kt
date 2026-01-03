@@ -11,8 +11,5 @@ object Categories : LongIdTable("categories") {
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
     val deletedAt = timestamp("deleted_at").nullable()
-
-    init {
-        uniqueIndex("unique_party_category", partyId, name)
-    }
+    // Partial unique index is defined in migration V2 (WHERE deleted_at IS NULL)
 }

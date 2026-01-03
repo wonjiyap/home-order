@@ -32,7 +32,7 @@ data class PartyGuestJoinResponse(
 }
 
 data class PartyGuestUpdateRequest(
-    @field:Size(max = 100, message = "닉네임은 20자 이내로 입력해주세요")
+    @field:Size(max = 20, message = "닉네임은 20자 이내로 입력해주세요")
     val nickname: String? = null,
 
     val isBlocked: Boolean? = null,
