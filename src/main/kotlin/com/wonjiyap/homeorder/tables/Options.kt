@@ -12,7 +12,5 @@ object Options : LongIdTable("options") {
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
     val deletedAt = timestamp("deleted_at").nullable()
 
-    init {
-        uniqueIndex("unique_option_group_option", optionGroupId, name)
-    }
+    // Partial unique index is defined in migration V4 (WHERE deleted_at IS NULL)
 }
