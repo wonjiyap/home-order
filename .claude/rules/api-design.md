@@ -35,11 +35,32 @@ PartyFetchParam       // 파티 목록 조회 파라미터
   - Service: 반환값 없음 (Unit)
   - Controller: `ResponseEntity<Void>` 반환, `ResponseEntity.noContent().build()` 사용
 
+## Validation 규칙
+
+| 필드 유형 | 최대 길이 |
+|-----------|-----------|
+| 이름 (name) | 20자 |
+| 설명 (description) | 100자 |
+
+```kotlin
+// Controller Request DTO 예시
+data class MenuCreateRequest(
+    @field:NotBlank(message = "메뉴 이름은 필수입니다")
+    @field:Size(max = 20, message = "메뉴 이름은 20자 이하여야 합니다")
+    val name: String,
+    @field:Size(max = 100, message = "설명은 100자 이하여야 합니다")
+    val description: String? = null,
+)
+```
+
 ## REST API 규칙
 
 - **수정(Update)은 항상 PATCH 사용** (PUT 사용하지 않음)
 - 상태 변경도 별도 API 없이 PATCH로 처리
 - PatchRequest의 필드는 nullable로 선언하여 값이 있을 때만 업데이트
+- **displayOrder 컬럼이 있는 엔티티는 reorder API 필수**
+  - `PATCH /{resource}/reorder` - ID 목록 순서대로 displayOrder 업데이트
+  - 전달된 ID 목록에 없는 항목은 뒤쪽 순서로 유지
 
 ```kotlin
 // PatchRequest 예시
