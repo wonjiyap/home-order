@@ -1,6 +1,7 @@
 package com.wonjiyap.homeorder.controller
 
 import com.wonjiyap.homeorder.controller.dto.MenuCreateRequest
+import com.wonjiyap.homeorder.controller.dto.MenuReorderRequest
 import com.wonjiyap.homeorder.controller.dto.MenuResponse
 import com.wonjiyap.homeorder.controller.dto.MenuUpdateRequest
 import com.wonjiyap.homeorder.service.MenuService
@@ -8,6 +9,7 @@ import com.wonjiyap.homeorder.service.dto.MenuCreateParam
 import com.wonjiyap.homeorder.service.dto.MenuDeleteParam
 import com.wonjiyap.homeorder.service.dto.MenuGetParam
 import com.wonjiyap.homeorder.service.dto.MenuListParam
+import com.wonjiyap.homeorder.service.dto.MenuReorderParam
 import com.wonjiyap.homeorder.service.dto.MenuUpdateParam
 import com.wonjiyap.homeorder.util.AuthContext
 import io.swagger.v3.oas.annotations.Operation
@@ -102,6 +104,22 @@ class MenuController(
             )
         )
         return MenuResponse.from(menu)
+    }
+
+    @Operation(summary = "메뉴 순서 변경")
+    @PatchMapping("/reorder")
+    fun reorder(
+        @PathVariable categoryId: Long,
+        @Valid @RequestBody request: MenuReorderRequest,
+    ): List<MenuResponse> {
+        val menus = menuService.reorder(
+            MenuReorderParam(
+                categoryId = categoryId,
+                hostId = authContext.getCurrentUserId(),
+                menuIds = request.menuIds,
+            )
+        )
+        return menus.map { MenuResponse.from(it) }
     }
 
     @Operation(summary = "메뉴 삭제")

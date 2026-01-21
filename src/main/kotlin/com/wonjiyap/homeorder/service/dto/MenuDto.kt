@@ -50,3 +50,12 @@ data class MenuDeleteParam(
     val categoryId: Long,
     val hostId: Long,
 )
+
+/**
+ * Menu reorder param
+ */
+data class MenuReorderParam(
+    val categoryId: Long,
+    val hostId: Long,
+    val menuIds: List<Long>,
+)

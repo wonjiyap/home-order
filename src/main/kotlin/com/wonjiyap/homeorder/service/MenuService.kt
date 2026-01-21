@@ -15,6 +15,7 @@ import com.wonjiyap.homeorder.service.dto.MenuCreateParam
 import com.wonjiyap.homeorder.service.dto.MenuDeleteParam
 import com.wonjiyap.homeorder.service.dto.MenuGetParam
 import com.wonjiyap.homeorder.service.dto.MenuListParam
+import com.wonjiyap.homeorder.service.dto.MenuReorderParam
 import com.wonjiyap.homeorder.service.dto.MenuUpdateParam
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Service
@@ -103,6 +104,41 @@ class MenuService(
         ) ?: throw HomeOrderException(ErrorCode.NOT_FOUND, "메뉴를 찾을 수 없습니다")
 
         menu.deletedAt = Instant.now()
+    }
+
+    fun reorder(param: MenuReorderParam): List<MenuEntity> = transaction {
+        validateCategoryOwnership(param.categoryId, param.hostId)
+
+        val menus = menuRepository.fetch(
+            MenuFetchParam(
+                categoryId = param.categoryId,
+                withDeleted = false,
+            )
+        )
+
+        val menuMap = menus.associateBy { it.id.value }
+        val now = Instant.now()
+
+        param.menuIds.forEachIndexed { index, menuId ->
+            val menu = menuMap[menuId]
+                ?: throw HomeOrderException(ErrorCode.NOT_FOUND, "메뉴를 찾을 수 없습니다: $menuId")
+            menu.displayOrder = index
+            menu.updatedAt = now
+        }
+
+        // 전달된 ID 목록에 없는 메뉴들은 뒤쪽 순서로 유지
+        val remainingMenus = menus.filter { it.id.value !in param.menuIds }
+        remainingMenus.forEachIndexed { index, menu ->
+            menu.displayOrder = param.menuIds.size + index
+            menu.updatedAt = now
+        }
+
+        menuRepository.fetch(
+            MenuFetchParam(
+                categoryId = param.categoryId,
+                withDeleted = false,
+            )
+        )
     }
 
     private fun validateCategoryOwnership(categoryId: Long, hostId: Long): CategoryEntity {
