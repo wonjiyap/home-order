@@ -1,7 +1,7 @@
 package com.wonjiyap.homeorder.controller.dto
 
-import com.wonjiyap.homeorder.domain.OrderEntity
 import com.wonjiyap.homeorder.enums.OrderStatus
+import com.wonjiyap.homeorder.service.dto.OrderResult
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotEmpty
@@ -41,6 +41,25 @@ data class OrderUpdateRequest(
 )
 
 /**
+ * Order item option response
+ */
+data class OrderItemOptionResponse(
+    val id: Long,
+    val optionId: Long,
+)
+
+/**
+ * Order item response
+ */
+data class OrderItemResponse(
+    val id: Long,
+    val menuId: Long,
+    val quantity: Int,
+    val notes: String?,
+    val options: List<OrderItemOptionResponse>,
+)
+
+/**
  * Order response
  */
 data class OrderResponse(
@@ -48,18 +67,33 @@ data class OrderResponse(
     val partyId: Long,
     val guestId: Long,
     val status: OrderStatus,
+    val items: List<OrderItemResponse>,
     val orderedAt: Instant,
     val updatedAt: Instant,
 ) {
     companion object {
-        fun from(entity: OrderEntity): OrderResponse {
+        fun from(result: OrderResult): OrderResponse {
             return OrderResponse(
-                id = entity.id.value,
-                partyId = entity.partyId,
-                guestId = entity.guestId,
-                status = entity.status,
-                orderedAt = entity.orderedAt,
-                updatedAt = entity.updatedAt,
+                id = result.id,
+                partyId = result.partyId,
+                guestId = result.guestId,
+                status = result.status,
+                items = result.items.map { item ->
+                    OrderItemResponse(
+                        id = item.id,
+                        menuId = item.menuId,
+                        quantity = item.quantity,
+                        notes = item.notes,
+                        options = item.options.map { option ->
+                            OrderItemOptionResponse(
+                                id = option.id,
+                                optionId = option.optionId,
+                            )
+                        },
+                    )
+                },
+                orderedAt = result.orderedAt,
+                updatedAt = result.updatedAt,
             )
         }
     }

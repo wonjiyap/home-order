@@ -48,3 +48,35 @@ data class OrderUpdateParam(
     val status: OrderStatus? = null,
 )
 
+/**
+ * Order item option result
+ */
+data class OrderItemOptionResult(
+    val id: Long,
+    val optionId: Long,
+)
+
+/**
+ * Order item result
+ */
+data class OrderItemResult(
+    val id: Long,
+    val menuId: Long,
+    val quantity: Int,
+    val notes: String?,
+    val options: List<OrderItemOptionResult>,
+)
+
+/**
+ * Order result
+ */
+data class OrderResult(
+    val id: Long,
+    val partyId: Long,
+    val guestId: Long,
+    val status: OrderStatus,
+    val items: List<OrderItemResult>,
+    val orderedAt: java.time.Instant,
+    val updatedAt: java.time.Instant,
+)
+
