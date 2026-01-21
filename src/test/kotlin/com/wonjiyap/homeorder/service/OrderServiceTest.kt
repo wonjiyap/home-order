@@ -135,7 +135,7 @@ class OrderServiceTest {
         val order = orderService.create(param)
 
         // Then
-        assertThat(order.id.value).isGreaterThan(0)
+        assertThat(order.id).isGreaterThan(0)
         assertThat(order.partyId).isEqualTo(testPartyId)
         assertThat(order.guestId).isEqualTo(testGuestId)
         assertThat(order.status).isEqualTo(OrderStatus.READY)
@@ -161,7 +161,7 @@ class OrderServiceTest {
 
         // Then
         val orderItems = orderItemRepository.fetch(
-            OrderItemFetchParam(orderId = order.id.value)
+            OrderItemFetchParam(orderId = order.id)
         )
         assertThat(orderItems).hasSize(1)
         assertThat(orderItems[0].menuId).isEqualTo(testMenuId)
@@ -189,7 +189,7 @@ class OrderServiceTest {
 
         // Then
         val orderItems = orderItemRepository.fetch(
-            OrderItemFetchParam(orderId = order.id.value)
+            OrderItemFetchParam(orderId = order.id)
         )
         val orderItemOptions = orderItemOptionRepository.fetch(
             OrderItemOptionFetchParam(orderItemId = orderItems[0].id.value)
@@ -301,14 +301,14 @@ class OrderServiceTest {
         // When
         val order = orderService.get(
             OrderGetParam(
-                id = created.id.value,
+                id = created.id,
                 partyId = testPartyId,
                 hostId = testUserId,
             )
         )
 
         // Then
-        assertThat(order.id.value).isEqualTo(created.id.value)
+        assertThat(order.id).isEqualTo(created.id)
         assertThat(order.partyId).isEqualTo(testPartyId)
         assertThat(order.guestId).isEqualTo(testGuestId)
     }
@@ -343,7 +343,7 @@ class OrderServiceTest {
         // When
         val updated = orderService.update(
             OrderUpdateParam(
-                id = created.id.value,
+                id = created.id,
                 partyId = testPartyId,
                 hostId = testUserId,
                 status = OrderStatus.COMPLETED,
