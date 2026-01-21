@@ -2,6 +2,7 @@ package com.wonjiyap.homeorder.controller.dto
 
 import com.wonjiyap.homeorder.domain.MenuEntity
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
 import java.time.Instant
 
@@ -28,6 +29,14 @@ data class MenuUpdateRequest(
     val description: String? = null,
     val isRecommended: Boolean? = null,
     val isSoldOut: Boolean? = null,
+)
+
+/**
+ * Menu reorder request
+ */
+data class MenuReorderRequest(
+    @field:NotEmpty(message = "메뉴 ID 목록은 필수입니다")
+    val menuIds: List<Long>,
 )
 
 /**

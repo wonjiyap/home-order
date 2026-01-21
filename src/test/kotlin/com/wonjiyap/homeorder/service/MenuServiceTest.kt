@@ -10,6 +10,7 @@ import com.wonjiyap.homeorder.service.dto.MenuCreateParam
 import com.wonjiyap.homeorder.service.dto.MenuDeleteParam
 import com.wonjiyap.homeorder.service.dto.MenuGetParam
 import com.wonjiyap.homeorder.service.dto.MenuListParam
+import com.wonjiyap.homeorder.service.dto.MenuReorderParam
 import com.wonjiyap.homeorder.service.dto.MenuUpdateParam
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -587,5 +588,150 @@ class MenuServiceTest {
         // Then
         assertThat(menu.name).isEqualTo("피자")
         assertThat(menu.categoryId).isEqualTo(anotherCategoryId)
+    }
+
+    @Test
+    fun `메뉴 순서 변경 테스트`() {
+        // Given
+        val menu1 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "피자",
+            )
+        )
+        val menu2 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "파스타",
+            )
+        )
+        val menu3 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "샐러드",
+            )
+        )
+
+        // When - 순서 변경: 샐러드, 피자, 파스타
+        val reordered = menuService.reorder(
+            MenuReorderParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                menuIds = listOf(menu3.id.value, menu1.id.value, menu2.id.value),
+            )
+        )
+
+        // Then
+        assertThat(reordered).hasSize(3)
+        assertThat(reordered[0].id.value).isEqualTo(menu3.id.value)
+        assertThat(reordered[0].displayOrder).isEqualTo(0)
+        assertThat(reordered[1].id.value).isEqualTo(menu1.id.value)
+        assertThat(reordered[1].displayOrder).isEqualTo(1)
+        assertThat(reordered[2].id.value).isEqualTo(menu2.id.value)
+        assertThat(reordered[2].displayOrder).isEqualTo(2)
+    }
+
+    @Test
+    fun `메뉴 순서 변경시 일부 ID만 전달하면 나머지는 뒤로 이동 테스트`() {
+        // Given
+        val menu1 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "피자",
+            )
+        )
+        val menu2 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "파스타",
+            )
+        )
+        val menu3 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "샐러드",
+            )
+        )
+
+        // When - 샐러드만 맨 앞으로, 나머지는 뒤로
+        val reordered = menuService.reorder(
+            MenuReorderParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                menuIds = listOf(menu3.id.value),
+            )
+        )
+
+        // Then
+        assertThat(reordered).hasSize(3)
+        assertThat(reordered[0].id.value).isEqualTo(menu3.id.value)
+        assertThat(reordered[0].displayOrder).isEqualTo(0)
+        // 나머지 메뉴들은 기존 순서대로 뒤에 배치
+        assertThat(reordered[1].id.value).isEqualTo(menu1.id.value)
+        assertThat(reordered[1].displayOrder).isEqualTo(1)
+        assertThat(reordered[2].id.value).isEqualTo(menu2.id.value)
+        assertThat(reordered[2].displayOrder).isEqualTo(2)
+    }
+
+    @Test
+    fun `존재하지 않는 메뉴 ID로 순서 변경시 예외 발생 테스트`() {
+        // Given
+        menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "피자",
+            )
+        )
+
+        // When & Then
+        assertThatThrownBy {
+            menuService.reorder(
+                MenuReorderParam(
+                    categoryId = testCategoryId,
+                    hostId = testUserId,
+                    menuIds = listOf(999999L),
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND)
+            .hasMessageContaining("메뉴를 찾을 수 없습니다")
+    }
+
+    @Test
+    fun `다른 사용자 카테고리의 메뉴 순서 변경시 예외 발생 테스트`() {
+        // Given
+        val menu1 = menuService.create(
+            MenuCreateParam(
+                categoryId = testCategoryId,
+                hostId = testUserId,
+                name = "피자",
+            )
+        )
+        val otherUserId = transaction {
+            UserEntity.new {
+                loginId = "otheruser_${System.nanoTime()}"
+                password = "password123"
+                nickname = "다른유저"
+            }.id.value
+        }
+
+        // When & Then
+        assertThatThrownBy {
+            menuService.reorder(
+                MenuReorderParam(
+                    categoryId = testCategoryId,
+                    hostId = otherUserId,
+                    menuIds = listOf(menu1.id.value),
+                )
+            )
+        }.isInstanceOf(HomeOrderException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN)
     }
 }
